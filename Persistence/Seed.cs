@@ -9,27 +9,32 @@ namespace Persistence
     {
         public static void SeedData(DataContext context)
         {
-            if(!context.Posts.Any()) 
+            if (!context.Posts.Any())
             {
-                var posts = new List<Post> 
+                var posts = new List<Post>
                 {
                     new Post
                     {
-                        Title = "New 1",
+                        Username = "User01",
                         Content = "Hi I'm Jordan",
-                        Date = DateTime.Now.AddMonths(-6)
+                        Date = DateTime.Now.AddMonths(-6),
+                        Replies = new List<Reply> {new Reply {
+                            Username = "User45",
+                            Content = "No you not",
+                            Date = DateTime.Now.AddMonths(-4)
+                        }}
                     },
                     new Post
                     {
-                        Title = "Heyefwef",
-                        Content = "Today my name is mike",
-                        Date = DateTime.Now.AddMonths(-2)
+                        Username = "Mike",
+                        Content = "Excelent",
+                        Date = DateTime.Now.AddMonths(-2),
                     },
                     new Post
                     {
-                        Title = "Jiraya",
+                        Username = "User from future",
                         Content = "Hello from future",
-                        Date = DateTime.Now.AddMonths(30)
+                        Date = DateTime.Now.AddMonths(30),
                     }
                 };
 

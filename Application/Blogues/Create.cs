@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Domain;
@@ -12,9 +13,10 @@ namespace Application.Blogues
         public class Command : IRequest
         {
             public Guid Id { get; set; }
-            public string Title { get; set; }
+            public string Username { get; set; }
             public string Content { get; set; }
             public DateTime Date { get; set; }
+            public List<Reply> Replies { get; set; }
         }
 
         public class Handler : IRequestHandler<Command>
@@ -27,15 +29,16 @@ namespace Application.Blogues
 
             public async Task<Unit> Handle(Command request, CancellationToken cancellationToken)
             {
-                var activity = new Post
+                var post = new Post
                 {
                     Id = request.Id,
-                    Title = request.Title,
+                    Username = request.Username,
                     Content = request.Content,
-                    Date = request.Date
+                    Date = request.Date,
+                    Replies = request.Replies
                 };
 
-                _context.Posts.Add(activity);
+                _context.Posts.Add(post);
                 var succes = await _context.SaveChangesAsync() > 0;
                 if (succes) return Unit.Value;
 

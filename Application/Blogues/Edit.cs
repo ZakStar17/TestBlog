@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Domain;
 using MediatR;
 using Persistence;
 
@@ -11,9 +13,10 @@ namespace Application.Blogues
         public class Command : IRequest
         {
             public Guid Id { get; set; }
-            public string Title { get; set; }
+            public string Username { get; set; }
             public string Content { get; set; }
             public DateTime Date { get; set; }
+            public List<Reply> Replies { get; set; }
         }
 
         public class Handler : IRequestHandler<Command>
@@ -31,8 +34,9 @@ namespace Application.Blogues
                 if (post == null)
                     throw new Exception("Could not find the post");
 
-                post.Title = request.Title ?? post.Title;
+                post.Username = request.Username ?? post.Username;
                 post.Content = request.Content ?? post.Content;
+                post.Replies = request.Replies ?? post.Replies;
 
                 var success = await _context.SaveChangesAsync() > 0;
 

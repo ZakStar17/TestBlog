@@ -9,7 +9,7 @@ using Persistence;
 namespace Persistence.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20191110222234_PostEntityAdded")]
+    [Migration("20191117124959_PostEntityAdded")]
     partial class PostEntityAdded
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -27,11 +27,31 @@ namespace Persistence.Migrations
 
                     b.Property<DateTime>("Date");
 
-                    b.Property<string>("Title");
+                    b.Property<string>("Username");
 
                     b.HasKey("Id");
 
                     b.ToTable("Posts");
+                });
+
+            modelBuilder.Entity("Domain.Reply", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Content");
+
+                    b.Property<DateTime>("Date");
+
+                    b.Property<Guid?>("PostId");
+
+                    b.Property<string>("Username");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PostId");
+
+                    b.ToTable("Reply");
                 });
 
             modelBuilder.Entity("Domain.Value", b =>
@@ -61,6 +81,13 @@ namespace Persistence.Migrations
                             Id = 3,
                             Name = "Value 003"
                         });
+                });
+
+            modelBuilder.Entity("Domain.Reply", b =>
+                {
+                    b.HasOne("Domain.Post")
+                        .WithMany("Replies")
+                        .HasForeignKey("PostId");
                 });
 #pragma warning restore 612, 618
         }
