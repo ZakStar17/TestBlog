@@ -1,26 +1,34 @@
 import React from "react";
 import { Comment } from "semantic-ui-react";
 import { PostForm } from "./../forms/PostForm";
-import { IformPost } from './../../../models/formPost';
+import { IformPost } from "./../../../models/formPost";
+import { ReplyList } from "./ReplyList";
+import { IPostReply } from "../../../models/postReply";
 
 interface IProps {
   posts: IformPost[];
   editPost: (post: IformPost) => void;
   deletePost: (id: string) => void;
   addPost: (post: IformPost) => void;
+  addReply: (reply: IPostReply, post: IformPost) => void;
+  deleteReply: (replyId: string, post: IformPost) => void;
+  editReply: (reply: IPostReply, post: IformPost) => void;
 }
 
 export const PostList: React.FC<IProps> = ({
   posts,
   editPost,
   deletePost,
-  addPost
+  addPost,
+  addReply,
+  deleteReply,
+  editReply
 }) => {
   return (
     <Comment.Group>
       {posts.map(post => (
         <Comment key={post.id}>
-          <Comment.Avatar as="a" src="/images/avatar/small/joe.jpg" />
+          <Comment.Avatar as="a" src="./../../../../public/default user icon.jpg" />
           <Comment.Content>
             <Comment.Author>{post.username}</Comment.Author>
             <Comment.Metadata>
@@ -50,17 +58,47 @@ export const PostList: React.FC<IProps> = ({
                 </Comment.Action>
               </Comment.Actions>
             )}
-            {(post.isFormShowed || post.isInEditMode) && (
+            {(post.isFormShowed) && (
               <PostForm
                 canCancel
-                editMode={post.isInEditMode}
+                editMode={false}
                 editPost={editPost}
                 post={post}
                 buttonText={"Reply"}
                 addPost={addPost}
+                belongsTo={post}
+                addReply={addReply}
+                editReply={editReply}
+                reply={null}
+                mention={null}
+              />
+            )}
+            {(post.isInEditMode) && (
+              <PostForm
+                canCancel
+                editMode
+                editPost={editPost}
+                post={post}
+                buttonText={"Edit"}
+                addPost={addPost}
+                belongsTo={post}
+                addReply={addReply}
+                editReply={editReply}
+                reply={null}
+                mention={null}
               />
             )}
           </Comment.Content>
+          <Comment.Group>
+            <ReplyList
+              replies={post.replies}
+              deleteReply={deleteReply}
+              belongsTo={post}
+              editReply={editReply}
+              addReply={addReply}
+              addPost={addPost}
+            ></ReplyList>
+          </Comment.Group>
         </Comment>
       ))}
     </Comment.Group>
