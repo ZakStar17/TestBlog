@@ -5,17 +5,17 @@ import { v4 as uuid } from "uuid";
 import { IPostReply } from "./../../../models/postReply";
 
 interface IProps {
-  canCancel: boolean;
-  editMode: boolean;
+  canCancel?: boolean;
+  editMode?: boolean;
   editPost?: (post: IformPost) => void;
   post?: IformPost; //this can be either a post or a reply
-  reply: IPostReply | null;
+  reply?: IPostReply;
   buttonText: string;
   addPost?: (post: IformPost) => void;
-  belongsTo: IformPost | null; // it will always belong to something if it's a reply
+  belongsTo?: IformPost; // it will always belong to something if it's a reply
   addReply: (reply: IPostReply, post: IformPost) => void;
   editReply: (reply: IPostReply, post: IformPost) => void;
-  mention: string | null;
+  mention?: string;
 }
 
 export const PostForm: React.FC<IProps> = ({
@@ -33,11 +33,11 @@ export const PostForm: React.FC<IProps> = ({
 }) => {
   const initializeFormContent = () => {
     let init;
-    if (mention !== null) init = "@" + mention + " ";
+    if (mention) init = "@" + mention + " ";
     else init = "";
 
     if (editMode) {
-      if (reply !== null) {
+      if (reply) {
         return init + reply.content;
       }
       return init + post!.content;
@@ -57,10 +57,12 @@ export const PostForm: React.FC<IProps> = ({
       id: uuid(),
       username: "Me",
       content: content,
+      hasBeenEdited: false,
       date: new Date(),
       replies: [],
       isFormShowed: false,
-      isInEditMode: false
+      isInEditMode: false,
+      isRepliesShowed: false
     };
     return nPost;
   };
@@ -69,6 +71,7 @@ export const PostForm: React.FC<IProps> = ({
       id: uuid(),
       username: "Me",
       content: content,
+      hasBeenEdited: false,
       date: new Date(),
       isFormShowed: false,
       isInEditMode: false
@@ -88,23 +91,25 @@ export const PostForm: React.FC<IProps> = ({
           onClick={() => {
             if (virtualContent.length > 0) {
               if (editMode) {
-                if (reply !== null) {
-                  reply!.isFormShowed = false;
-                  reply!.isInEditMode = false;
-                  reply!.content = virtualContent;
-                  editReply(reply!, belongsTo!);
-                } else {
-                  post!.isFormShowed = false;
-                  post!.isInEditMode = false;
-                  post!.content = virtualContent;
-                  editPost!(post!);
-                }
-              } else if (belongsTo !== null) {
-                if (reply !== null) {
+                if (reply) {
                   reply.isFormShowed = false;
-                  editReply(reply, post!);
+                  reply.isInEditMode = false;
+                  reply.content = virtualContent;
+                  reply.hasBeenEdited = true;
+                  editReply(reply!, belongsTo!);
+                } else if (post) {
+                  post.isFormShowed = false;
+                  post.isInEditMode = false;
+                  post.content = virtualContent;
+                  post.hasBeenEdited = true;
+                  editPost!(post);
+                }
+              } else if (belongsTo && post) {
+                if (reply) {
+                  reply.isFormShowed = false;
+                  editReply(reply, post);
                 } else {
-                  post!.isFormShowed = false;
+                  post.isFormShowed = false;
                 }
 
                 addReply(newReply(virtualContent), post!);
@@ -122,14 +127,14 @@ export const PostForm: React.FC<IProps> = ({
             icon="delete"
             color="grey"
             onClick={() => {
-              if (reply !== null) {
+              if (reply) {
                 reply.isFormShowed = false;
                 reply.isInEditMode = false;
                 editReply(reply, belongsTo!);
-              } else {
-                post!.isFormShowed = false;
-                post!.isInEditMode = false;
-                editPost!(post!);
+              } else if (post) {
+                post.isFormShowed = false;
+                post.isInEditMode = false;
+                editPost!(post);
               }
             }}
           />

@@ -25,10 +25,14 @@ const App = () => {
   const handleAddReply = (reply: IPostReply, post: IformPost) => {
     post.replies = [reply, ...post.replies];
     handleUpdatePost(post)
+    post.isRepliesShowed = true
   }
   const handleDeleteReply = (replyId: string, post: IformPost) => {
     post.replies = [...post.replies.filter(r => r.id !== replyId)];
     handleUpdatePost(post)
+    if (post.replies.length == 0) {
+      post.isRepliesShowed = false
+    }
   }
   const handleUpdateReply = (reply: IPostReply, post: IformPost) => {
     let updatedReplies : IPostReply[] = [];
@@ -56,13 +60,19 @@ const App = () => {
         } else {
           replies = responsePost.replies
         }
+        let edited = false
+        if (responsePost.hasBeenEdited) {
+          edited = true;
+        }
         formPosts.push({
           id: responsePost.id,
           username: responsePost.username,
           content: responsePost.content,
+          hasBeenEdited: edited,
           date: responsePost.date,
           isFormShowed: false,
           isInEditMode: false,
+          isRepliesShowed: false,
           replies: replies
         })
       });

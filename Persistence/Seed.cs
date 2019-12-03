@@ -17,6 +17,7 @@ namespace Persistence
                     {
                         Username = "User01",
                         Content = "Hi I'm Jordan",
+                        HasBeenEdited = true,
                         Date = DateTime.Now.AddMonths(-6),
                         Replies = new List<Reply> {new Reply {
                             Username = "User45",
@@ -28,12 +29,14 @@ namespace Persistence
                     {
                         Username = "Mike",
                         Content = "Excelent",
+                        HasBeenEdited = false,
                         Date = DateTime.Now.AddMonths(-2),
                     },
                     new Post
                     {
                         Username = "User from future",
                         Content = "Hello from future",
+                        HasBeenEdited = false,
                         Date = DateTime.Now.AddMonths(30),
                     }
                 };

@@ -25,11 +25,12 @@ export const ReplyList: React.FC<IProps> = ({
     <Fragment>
       {replies.map(reply => (
         <Comment key={reply.id}>
-          <Comment.Avatar as="a" src="/images/avatar/small/joe.jpg" />
+          <Comment.Avatar as="a" src=".\abc.jpg" />
           <Comment.Content>
             <Comment.Author>{reply.username}</Comment.Author>
             <Comment.Metadata>
               <div>{String(reply.date)}</div>
+              {(reply.hasBeenEdited) && <div>edited</div>}
             </Comment.Metadata>
             {!reply.isInEditMode && (
               <Comment.Text>{reply.content}</Comment.Text>
@@ -68,13 +69,11 @@ export const ReplyList: React.FC<IProps> = ({
                 belongsTo={belongsTo}
                 editReply={editReply}
                 addReply={addReply}
-                mention={null}
               />
             )}
             {reply.isFormShowed && (
               <PostForm
                 canCancel
-                editMode={false}
                 post={belongsTo}
                 buttonText={"Reply"}
                 addPost={addPost}

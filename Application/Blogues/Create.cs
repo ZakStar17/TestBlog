@@ -15,6 +15,7 @@ namespace Application.Blogues
             public Guid Id { get; set; }
             public string Username { get; set; }
             public string Content { get; set; }
+            public bool HasBeenEdited { get; set; }
             public DateTime Date { get; set; }
             public List<Reply> Replies { get; set; }
         }
@@ -34,6 +35,7 @@ namespace Application.Blogues
                     Id = request.Id,
                     Username = request.Username,
                     Content = request.Content,
+                    HasBeenEdited = request.HasBeenEdited,
                     Date = request.Date,
                     Replies = request.Replies
                 };

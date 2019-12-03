@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Fragment } from "react";
 import { Comment } from "semantic-ui-react";
 import { PostForm } from "./../forms/PostForm";
 import { IformPost } from "./../../../models/formPost";
@@ -28,40 +28,63 @@ export const PostList: React.FC<IProps> = ({
     <Comment.Group>
       {posts.map(post => (
         <Comment key={post.id}>
-          <Comment.Avatar as="a" src="./../../../../public/default user icon.jpg" />
+          <Comment.Avatar as="a" src=".\abc.jpg" />
           <Comment.Content>
             <Comment.Author>{post.username}</Comment.Author>
             <Comment.Metadata>
               <div>{String(post.date)}</div>
+              {post.hasBeenEdited && <div>edited</div>}
             </Comment.Metadata>
             {!post.isInEditMode && <Comment.Text>{post.content}</Comment.Text>}
-            {!post.isInEditMode && (
-              <Comment.Actions>
+            <Comment.Actions>
+              {!post.isInEditMode && (
+                <Fragment>
+                  <Comment.Action
+                    onClick={() => {
+                      post.isFormShowed = true;
+                      editPost(post);
+                    }}
+                  >
+                    Reply
+                  </Comment.Action>
+                  <Comment.Action
+                    onClick={() => {
+                      post.isInEditMode = true;
+                      editPost(post);
+                    }}
+                  >
+                    Edit
+                  </Comment.Action>
+                  <Comment.Action onClick={() => deletePost(post.id)}>
+                    Delete
+                  </Comment.Action>
+                </Fragment>
+              )}
+              {!post.isRepliesShowed && post.replies.length > 0 && (
                 <Comment.Action
                   onClick={() => {
-                    post.isFormShowed = true;
+                    post.isRepliesShowed = true;
                     editPost(post);
                   }}
                 >
-                  Reply
+                  Show {post.replies.length} Replies
                 </Comment.Action>
+              )}
+              {post.isRepliesShowed && (
                 <Comment.Action
                   onClick={() => {
-                    post.isInEditMode = true;
+                    post.isRepliesShowed = false;
                     editPost(post);
                   }}
                 >
-                  Edit
+                  Hide Replies
                 </Comment.Action>
-                <Comment.Action onClick={() => deletePost(post.id)}>
-                  Delete
-                </Comment.Action>
-              </Comment.Actions>
-            )}
-            {(post.isFormShowed) && (
+              )}
+            </Comment.Actions>
+
+            {post.isFormShowed && (
               <PostForm
                 canCancel
-                editMode={false}
                 editPost={editPost}
                 post={post}
                 buttonText={"Reply"}
@@ -69,11 +92,9 @@ export const PostList: React.FC<IProps> = ({
                 belongsTo={post}
                 addReply={addReply}
                 editReply={editReply}
-                reply={null}
-                mention={null}
               />
             )}
-            {(post.isInEditMode) && (
+            {post.isInEditMode && (
               <PostForm
                 canCancel
                 editMode
@@ -84,20 +105,20 @@ export const PostList: React.FC<IProps> = ({
                 belongsTo={post}
                 addReply={addReply}
                 editReply={editReply}
-                reply={null}
-                mention={null}
               />
             )}
           </Comment.Content>
           <Comment.Group>
-            <ReplyList
-              replies={post.replies}
-              deleteReply={deleteReply}
-              belongsTo={post}
-              editReply={editReply}
-              addReply={addReply}
-              addPost={addPost}
-            ></ReplyList>
+            {post.isRepliesShowed && (
+              <ReplyList
+                replies={post.replies}
+                deleteReply={deleteReply}
+                belongsTo={post}
+                editReply={editReply}
+                addReply={addReply}
+                addPost={addPost}
+              ></ReplyList>
+            )}
           </Comment.Group>
         </Comment>
       ))}

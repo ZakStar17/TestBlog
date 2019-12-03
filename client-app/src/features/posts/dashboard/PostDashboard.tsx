@@ -28,16 +28,11 @@ export const PostDashboard: React.FC<IProps> = ({
     <Grid>
       <Grid.Column width={10}>
         <PostForm
-          canCancel={false}
           editPost={editPost}
           buttonText={"Comment"}
-          editMode={false}
           addPost={addPost}
-          belongsTo={null}
           addReply={addReply}
           editReply={editReply}
-          reply={null}
-          mention={null}
         ></PostForm>
         <PostList
           posts={posts}

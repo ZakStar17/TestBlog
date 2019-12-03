@@ -15,6 +15,7 @@ namespace Application.Blogues
             public Guid Id { get; set; }
             public string Username { get; set; }
             public string Content { get; set; }
+            public bool HasBeenEdited { get; set; }
             public DateTime Date { get; set; }
             public List<Reply> Replies { get; set; }
         }
@@ -37,6 +38,7 @@ namespace Application.Blogues
                 post.Username = request.Username ?? post.Username;
                 post.Content = request.Content ?? post.Content;
                 post.Replies = request.Replies ?? post.Replies;
+                post.HasBeenEdited = request.HasBeenEdited ? true:false;
 
                 var success = await _context.SaveChangesAsync() > 0;
 
