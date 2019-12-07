@@ -7,7 +7,8 @@ import { IPostReply } from "./../../../models/postReply";
 interface IProps {
   canCancel?: boolean;
   editMode?: boolean;
-  editPost?: (post: IformPost) => void;
+  editPostClient?: (post: IformPost) => void;
+  editPostServer?: (post: IformPost, event: string | null) => void;
   post?: IformPost; //this can be either a post or a reply
   reply?: IPostReply;
   buttonText: string;
@@ -16,11 +17,14 @@ interface IProps {
   addReply: (reply: IPostReply, post: IformPost) => void;
   editReply: (reply: IPostReply, post: IformPost) => void;
   mention?: string;
+  submitting?: boolean;
+  target: string;
 }
 
 export const PostForm: React.FC<IProps> = ({
   canCancel,
-  editPost,
+  editPostClient,
+  editPostServer,
   post,
   buttonText,
   editMode,
@@ -29,7 +33,9 @@ export const PostForm: React.FC<IProps> = ({
   addReply,
   editReply,
   reply,
-  mention
+  mention,
+  submitting = false,
+  target
 }) => {
   const initializeFormContent = () => {
     let init;
@@ -84,40 +90,44 @@ export const PostForm: React.FC<IProps> = ({
       <Form.TextArea onChange={handleInputChange} value={virtualContent} />
       <Button.Group>
         <Button
+          loading={
+            ((post && target === post.id) ||
+              (target === "newComment" && !post)) &&
+            submitting
+          }
           content={buttonText}
           labelPosition="left"
           icon="edit"
           primary
           onClick={() => {
-            if (virtualContent.length > 0) {
-              if (editMode) {
-                if (reply) {
-                  reply.isFormShowed = false;
-                  reply.isInEditMode = false;
-                  reply.content = virtualContent;
-                  reply.hasBeenEdited = true;
-                  editReply(reply!, belongsTo!);
-                } else if (post) {
-                  post.isFormShowed = false;
-                  post.isInEditMode = false;
-                  post.content = virtualContent;
-                  post.hasBeenEdited = true;
-                  editPost!(post);
-                }
-              } else if (belongsTo && post) {
-                if (reply) {
-                  reply.isFormShowed = false;
-                  editReply(reply, post);
+            if (!submitting) {
+              if (virtualContent.length > 0) {
+                if (editMode) {
+                  if (reply) {
+                    reply.isFormShowed = false;
+                    reply.isInEditMode = false;
+                    reply.content = virtualContent;
+                    reply.hasBeenEdited = true;
+                    editReply(reply!, belongsTo!);
+                  } else if (post) {
+                    post.content = virtualContent;
+                    post.hasBeenEdited = true;
+                    editPostServer!(post, post.id);
+                  }
+                } else if (belongsTo && post) {
+                  if (reply) {
+                    reply.isFormShowed = false;
+                    editReply(reply, post);
+                  } else {
+                    post.isFormShowed = false;
+                  }
+                  addReply(newReply(virtualContent), post!);
                 } else {
-                  post.isFormShowed = false;
+                  addPost!(newPost(virtualContent));
                 }
-
-                addReply(newReply(virtualContent), post!);
-              } else {
-                addPost!(newPost(virtualContent));
               }
+              setVirtualContent("");
             }
-            setVirtualContent("");
           }}
         />
         {canCancel && (
@@ -134,7 +144,7 @@ export const PostForm: React.FC<IProps> = ({
               } else if (post) {
                 post.isFormShowed = false;
                 post.isInEditMode = false;
-                editPost!(post);
+                editPostClient!(post);
               }
             }}
           />

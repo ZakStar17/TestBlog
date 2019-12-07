@@ -7,22 +7,29 @@ import { IPostReply } from "../../../models/postReply";
 
 interface IProps {
   posts: IformPost[];
-  editPost: (post: IformPost) => void;
+  editPostClient: (post: IformPost) => void;
+  editPostServer: (post: IformPost) => void;
   deletePost: (id: string) => void;
   addPost: (post: IformPost) => void;
   addReply: (reply: IPostReply, post: IformPost) => void;
   deleteReply: (replyId: string, post: IformPost) => void;
   editReply: (reply: IPostReply, post: IformPost) => void;
+  submitting: boolean;
+  target: string;
+  updatePopup: (target: string) => void;
 }
 
 export const PostList: React.FC<IProps> = ({
   posts,
-  editPost,
-  deletePost,
+  editPostClient,
+  editPostServer,
   addPost,
   addReply,
   deleteReply,
-  editReply
+  editReply,
+  submitting,
+  target,
+  updatePopup
 }) => {
   return (
     <Comment.Group>
@@ -42,7 +49,7 @@ export const PostList: React.FC<IProps> = ({
                   <Comment.Action
                     onClick={() => {
                       post.isFormShowed = true;
-                      editPost(post);
+                      editPostClient(post);
                     }}
                   >
                     Reply
@@ -50,12 +57,17 @@ export const PostList: React.FC<IProps> = ({
                   <Comment.Action
                     onClick={() => {
                       post.isInEditMode = true;
-                      editPost(post);
+                      editPostClient(post);
                     }}
                   >
                     Edit
                   </Comment.Action>
-                  <Comment.Action onClick={() => deletePost(post.id)}>
+                  <Comment.Action
+                    onClick={() => {
+                      // deletePost(post.id);
+                      updatePopup(post.id)
+                    }}
+                  >
                     Delete
                   </Comment.Action>
                 </Fragment>
@@ -64,7 +76,7 @@ export const PostList: React.FC<IProps> = ({
                 <Comment.Action
                   onClick={() => {
                     post.isRepliesShowed = true;
-                    editPost(post);
+                    editPostClient(post);
                   }}
                 >
                   Show {post.replies.length} Replies
@@ -74,7 +86,7 @@ export const PostList: React.FC<IProps> = ({
                 <Comment.Action
                   onClick={() => {
                     post.isRepliesShowed = false;
-                    editPost(post);
+                    editPostClient(post);
                   }}
                 >
                   Hide Replies
@@ -85,26 +97,32 @@ export const PostList: React.FC<IProps> = ({
             {post.isFormShowed && (
               <PostForm
                 canCancel
-                editPost={editPost}
+                editPostClient={editPostClient}
+                editPostServer={editPostServer}
                 post={post}
                 buttonText={"Reply"}
                 addPost={addPost}
                 belongsTo={post}
                 addReply={addReply}
                 editReply={editReply}
+                submitting={submitting}
+                target={target}
               />
             )}
             {post.isInEditMode && (
               <PostForm
                 canCancel
                 editMode
-                editPost={editPost}
+                editPostClient={editPostClient}
+                editPostServer={editPostServer}
                 post={post}
                 buttonText={"Edit"}
                 addPost={addPost}
                 belongsTo={post}
                 addReply={addReply}
                 editReply={editReply}
+                submitting={submitting}
+                target={target}
               />
             )}
           </Comment.Content>
@@ -117,6 +135,7 @@ export const PostList: React.FC<IProps> = ({
                 editReply={editReply}
                 addReply={addReply}
                 addPost={addPost}
+                target={target}
               ></ReplyList>
             )}
           </Comment.Group>

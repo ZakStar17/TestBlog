@@ -11,6 +11,7 @@ interface IProps {
   editReply: (reply: IPostReply, post: IformPost) => void;
   addReply: (reply: IPostReply, post: IformPost) => void;
   addPost: (post: IformPost) => void;
+  target: string;
 }
 
 export const ReplyList: React.FC<IProps> = ({
@@ -19,7 +20,8 @@ export const ReplyList: React.FC<IProps> = ({
   deleteReply,
   editReply,
   addReply,
-  addPost
+  addPost,
+  target
 }) => {
   return (
     <Fragment>
@@ -69,6 +71,7 @@ export const ReplyList: React.FC<IProps> = ({
                 belongsTo={belongsTo}
                 editReply={editReply}
                 addReply={addReply}
+                target={target}
               />
             )}
             {reply.isFormShowed && (
@@ -82,6 +85,7 @@ export const ReplyList: React.FC<IProps> = ({
                 editReply={editReply}
                 reply={reply}
                 mention={reply.username}
+                target={target}
               />
             )}
           </Comment.Content>
