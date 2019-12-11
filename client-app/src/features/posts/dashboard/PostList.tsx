@@ -1,46 +1,24 @@
-import React, { Fragment } from "react";
+import React, { Fragment, useContext } from "react";
 import { Comment } from "semantic-ui-react";
 import { PostForm } from "./../forms/PostForm";
-import { IformPost } from "./../../../models/formPost";
 import { ReplyList } from "./ReplyList";
-import { IPostReply } from "../../../models/postReply";
+import PostStore from "./../../../app/stores/postStore";
+import { observer } from "mobx-react-lite";
 
-interface IProps {
-  posts: IformPost[];
-  editPostClient: (post: IformPost) => void;
-  editPostServer: (post: IformPost) => void;
-  deletePost: (id: string) => void;
-  addPost: (post: IformPost) => void;
-  addReply: (reply: IPostReply, post: IformPost) => void;
-  deleteReply: (replyId: string, post: IformPost) => void;
-  editReply: (reply: IPostReply, post: IformPost) => void;
-  submitting: boolean;
-  target: string;
-  updatePopup: (target: string) => void;
-}
 
-export const PostList: React.FC<IProps> = ({
-  posts,
-  editPostClient,
-  editPostServer,
-  addPost,
-  addReply,
-  deleteReply,
-  editReply,
-  submitting,
-  target,
-  updatePopup
-}) => {
+export const PostList: React.FC = () => {
+  const postStore = useContext(PostStore);
+  const {postsByDate, updatePostClient, updatePostDeletePopup, setReplyMode, setEditMode, showReplies} = postStore;
   return (
     <Comment.Group>
-      {posts.map(post => (
+      {postsByDate.map(post => (
         <Comment key={post.id}>
           <Comment.Avatar as="a" src=".\abc.jpg" />
           <Comment.Content>
             <Comment.Author>{post.username}</Comment.Author>
             <Comment.Metadata>
-              <div>{String(post.date)}</div>
-              {post.hasBeenEdited && <div>edited</div>}
+              <div>{post.date}</div>
+             <div>{post.hasBeenEdited && "edited"}</div>
             </Comment.Metadata>
             {!post.isInEditMode && <Comment.Text>{post.content}</Comment.Text>}
             <Comment.Actions>
@@ -48,45 +26,42 @@ export const PostList: React.FC<IProps> = ({
                 <Fragment>
                   <Comment.Action
                     onClick={() => {
-                      post.isFormShowed = true;
-                      editPostClient(post);
+                      setReplyMode(post);
+                      updatePostClient(post);
                     }}
                   >
                     Reply
                   </Comment.Action>
                   <Comment.Action
                     onClick={() => {
-                      post.isInEditMode = true;
-                      editPostClient(post);
+                      setEditMode(post);
+                      updatePostClient(post);
                     }}
                   >
                     Edit
                   </Comment.Action>
                   <Comment.Action
-                    onClick={() => {
-                      // deletePost(post.id);
-                      updatePopup(post.id)
-                    }}
+                    onClick={() => updatePostDeletePopup(post)}
                   >
                     Delete
                   </Comment.Action>
                 </Fragment>
               )}
-              {!post.isRepliesShowed && post.replies.length > 0 && (
+              {!post.isRepliesShowed && post.replies.size > 0 && (
                 <Comment.Action
                   onClick={() => {
-                    post.isRepliesShowed = true;
-                    editPostClient(post);
+                    showReplies(post);
+                    updatePostClient(post);
                   }}
                 >
-                  Show {post.replies.length} Replies
+                  Show {post.replies.size} Replies
                 </Comment.Action>
               )}
               {post.isRepliesShowed && (
                 <Comment.Action
                   onClick={() => {
-                    post.isRepliesShowed = false;
-                    editPostClient(post);
+                    showReplies(post, false);
+                    updatePostClient(post);
                   }}
                 >
                   Hide Replies
@@ -97,45 +72,25 @@ export const PostList: React.FC<IProps> = ({
             {post.isFormShowed && (
               <PostForm
                 canCancel
-                editPostClient={editPostClient}
-                editPostServer={editPostServer}
                 post={post}
                 buttonText={"Reply"}
-                addPost={addPost}
                 belongsTo={post}
-                addReply={addReply}
-                editReply={editReply}
-                submitting={submitting}
-                target={target}
               />
             )}
             {post.isInEditMode && (
               <PostForm
                 canCancel
                 editMode
-                editPostClient={editPostClient}
-                editPostServer={editPostServer}
                 post={post}
                 buttonText={"Edit"}
-                addPost={addPost}
                 belongsTo={post}
-                addReply={addReply}
-                editReply={editReply}
-                submitting={submitting}
-                target={target}
               />
             )}
           </Comment.Content>
           <Comment.Group>
             {post.isRepliesShowed && (
               <ReplyList
-                replies={post.replies}
-                deleteReply={deleteReply}
-                belongsTo={post}
-                editReply={editReply}
-                addReply={addReply}
-                addPost={addPost}
-                target={target}
+                post={post}
               ></ReplyList>
             )}
           </Comment.Group>
@@ -144,3 +99,5 @@ export const PostList: React.FC<IProps> = ({
     </Comment.Group>
   );
 };
+
+export default observer(PostList);

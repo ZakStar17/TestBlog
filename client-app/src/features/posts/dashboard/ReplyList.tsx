@@ -1,38 +1,27 @@
-import React, { Fragment } from "react";
-import { IPostReply } from "../../../models/postReply";
+import React, { Fragment, useContext } from "react";
 import { Comment } from "semantic-ui-react";
 import { PostForm } from "./../forms/PostForm";
 import { IformPost } from "../../../models/formPost";
+import { observer } from "mobx-react-lite";
+import PostStore from "./../../../app/stores/postStore";
 
 interface IProps {
-  replies: IPostReply[];
-  deleteReply: (replyId: string, post: IformPost) => void;
-  belongsTo: IformPost;
-  editReply: (reply: IPostReply, post: IformPost) => void;
-  addReply: (reply: IPostReply, post: IformPost) => void;
-  addPost: (post: IformPost) => void;
-  target: string;
+  post: IformPost;
 }
 
-export const ReplyList: React.FC<IProps> = ({
-  replies,
-  belongsTo,
-  deleteReply,
-  editReply,
-  addReply,
-  addPost,
-  target
-}) => {
+export const ReplyList: React.FC<IProps> = ({ post }) => {
+  const postStore = useContext(PostStore);
+  const { updateReplyClient, updateReplyDeletePopup, setEditMode, setReplyMode} = postStore;
   return (
     <Fragment>
-      {replies.map(reply => (
+      {Array.from(post.replies.values()).map(reply => (
         <Comment key={reply.id}>
           <Comment.Avatar as="a" src=".\abc.jpg" />
           <Comment.Content>
             <Comment.Author>{reply.username}</Comment.Author>
             <Comment.Metadata>
               <div>{String(reply.date)}</div>
-              {(reply.hasBeenEdited) && <div>edited</div>}
+              {reply.hasBeenEdited && <div>edited</div>}
             </Comment.Metadata>
             {!reply.isInEditMode && (
               <Comment.Text>{reply.content}</Comment.Text>
@@ -41,22 +30,22 @@ export const ReplyList: React.FC<IProps> = ({
               <Comment.Actions>
                 <Comment.Action
                   onClick={() => {
-                    reply.isFormShowed = true;
-                    editReply(reply, belongsTo);
+                    setReplyMode(reply);
+                    updateReplyClient(reply, post);
                   }}
                 >
                   Reply
                 </Comment.Action>
                 <Comment.Action
                   onClick={() => {
-                    reply.isInEditMode = true;
-                    editReply(reply, belongsTo);
+                    setEditMode(reply);
+                    updateReplyClient(reply, post);
                   }}
                 >
                   Edit
                 </Comment.Action>
                 <Comment.Action
-                  onClick={() => deleteReply(reply.id, belongsTo)}
+                  onClick={() => updateReplyDeletePopup([reply, post])}
                 >
                   Delete
                 </Comment.Action>
@@ -68,24 +57,17 @@ export const ReplyList: React.FC<IProps> = ({
                 editMode
                 reply={reply}
                 buttonText={"Edit"}
-                belongsTo={belongsTo}
-                editReply={editReply}
-                addReply={addReply}
-                target={target}
+                belongsTo={post}
               />
             )}
             {reply.isFormShowed && (
               <PostForm
                 canCancel
-                post={belongsTo}
+                post={post}
                 buttonText={"Reply"}
-                addPost={addPost}
-                belongsTo={belongsTo}
-                addReply={addReply}
-                editReply={editReply}
+                belongsTo={post}
                 reply={reply}
                 mention={reply.username}
-                target={target}
               />
             )}
           </Comment.Content>
@@ -94,3 +76,5 @@ export const ReplyList: React.FC<IProps> = ({
     </Fragment>
   );
 };
+
+export default observer(ReplyList);

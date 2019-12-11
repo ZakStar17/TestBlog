@@ -1,42 +1,46 @@
-import React, { useState, FormEvent } from "react";
+import React, { useState, FormEvent, useContext } from "react";
 import { Form, Button } from "semantic-ui-react";
 import { IformPost } from "./../../../models/formPost";
 import { v4 as uuid } from "uuid";
 import { IPostReply } from "./../../../models/postReply";
+import PostStore from "./../../../app/stores/postStore";
+import { observer } from "mobx-react-lite";
+import { Ipost } from "../../../models/post";
 
 interface IProps {
   canCancel?: boolean;
   editMode?: boolean;
-  editPostClient?: (post: IformPost) => void;
-  editPostServer?: (post: IformPost, event: string | null) => void;
   post?: IformPost; //this can be either a post or a reply
   reply?: IPostReply;
   buttonText: string;
-  addPost?: (post: IformPost) => void;
   belongsTo?: IformPost; // it will always belong to something if it's a reply
-  addReply: (reply: IPostReply, post: IformPost) => void;
-  editReply: (reply: IPostReply, post: IformPost) => void;
   mention?: string;
-  submitting?: boolean;
-  target: string;
 }
 
 export const PostForm: React.FC<IProps> = ({
   canCancel,
-  editPostClient,
-  editPostServer,
   post,
   buttonText,
   editMode,
-  addPost,
   belongsTo,
-  addReply,
-  editReply,
   reply,
-  mention,
-  submitting = false,
-  target
+  mention
 }) => {
+  const postStore = useContext(PostStore);
+  const {
+    target,
+    submitting,
+    updatePostServer,
+    addPost,
+    updatePostClient,
+    addReply,
+    updateReplyServer,
+    updateReplyClient,
+    updateTarget,
+    setReplyMode,
+    setEditMode
+  } = postStore;
+
   const initializeFormContent = () => {
     let init;
     if (mention) init = "@" + mention + " ";
@@ -59,16 +63,13 @@ export const PostForm: React.FC<IProps> = ({
   };
 
   const newPost = (content: string) => {
-    let nPost: IformPost = {
+    let nPost: Ipost = {
       id: uuid(),
       username: "Me",
       content: content,
       hasBeenEdited: false,
       date: new Date(),
-      replies: [],
-      isFormShowed: false,
-      isInEditMode: false,
-      isRepliesShowed: false
+      replies: []
     };
     return nPost;
   };
@@ -92,6 +93,7 @@ export const PostForm: React.FC<IProps> = ({
         <Button
           loading={
             ((post && target === post.id) ||
+            (reply && target === reply.id) ||
               (target === "newComment" && !post)) &&
             submitting
           }
@@ -100,30 +102,31 @@ export const PostForm: React.FC<IProps> = ({
           icon="edit"
           primary
           onClick={() => {
-            if (!submitting) {
+            if (!submitting) {  // button will not work on submitting
               if (virtualContent.length > 0) {
-                if (editMode) {
+                if (editMode) { // save changes to the reply or the post
                   if (reply) {
-                    reply.isFormShowed = false;
-                    reply.isInEditMode = false;
-                    reply.content = virtualContent;
-                    reply.hasBeenEdited = true;
-                    editReply(reply!, belongsTo!);
+                    updateReplyServer(reply, belongsTo!, virtualContent);
                   } else if (post) {
-                    post.content = virtualContent;
-                    post.hasBeenEdited = true;
-                    editPostServer!(post, post.id);
+                    updateTarget(post.id);
+                    updatePostServer(post, virtualContent);
                   }
                 } else if (belongsTo && post) {
-                  if (reply) {
-                    reply.isFormShowed = false;
-                    editReply(reply, post);
-                  } else {
-                    post.isFormShowed = false;
+                  if (reply) {                // if replying from a reply
+                    updateTarget(reply.id);
+                    addReply(newReply(virtualContent), post).then(() => {
+                      setReplyMode(reply, false);
+                      updateReplyClient(reply, post);
+                    })
+                  } else {                    // if adding a new reply to one post
+                    updateTarget(post.id);
+                    addReply(newReply(virtualContent), post).then(() => {
+                      setReplyMode(post, false);
+                      updatePostClient(post);
+                    });
                   }
-                  addReply(newReply(virtualContent), post!);
                 } else {
-                  addPost!(newPost(virtualContent));
+                  addPost(newPost(virtualContent));  // if adding a new post
                 }
               }
               setVirtualContent("");
@@ -138,13 +141,13 @@ export const PostForm: React.FC<IProps> = ({
             color="grey"
             onClick={() => {
               if (reply) {
-                reply.isFormShowed = false;
-                reply.isInEditMode = false;
-                editReply(reply, belongsTo!);
+                setReplyMode(reply, false);
+                setEditMode(reply, false);
+                updateReplyClient(reply, belongsTo!);
               } else if (post) {
-                post.isFormShowed = false;
-                post.isInEditMode = false;
-                editPostClient!(post);
+                setReplyMode(post, false);
+                setEditMode(post, false);
+                updatePostClient(post);
               }
             }}
           />
@@ -153,3 +156,5 @@ export const PostForm: React.FC<IProps> = ({
     </Form>
   );
 };
+
+export default observer(PostForm);
