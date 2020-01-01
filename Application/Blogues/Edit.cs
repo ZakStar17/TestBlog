@@ -1,8 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using Application.Errors;
 using Domain;
+using FluentValidation;
 using MediatR;
 using Persistence;
 
@@ -20,6 +23,16 @@ namespace Application.Blogues
             public List<Reply> Replies { get; set; }
         }
 
+        public class CommandValidator : AbstractValidator<Command>
+        {
+            public CommandValidator()
+            {
+                RuleFor(x => x.Username).NotEmpty();
+                RuleFor(x => x.Content).NotEmpty();
+                RuleFor(x => x.Date).NotEmpty();
+            }
+        }
+
         public class Handler : IRequestHandler<Command>
         {
             private readonly DataContext _context;
@@ -33,7 +46,7 @@ namespace Application.Blogues
                 var post = await _context.Posts.FindAsync(request.Id);
 
                 if (post == null)
-                    throw new Exception("Could not find the post");
+                    throw new RestException(HttpStatusCode.NotFound, new { post = "Not found" });
 
                 post.Username = request.Username ?? post.Username;
                 post.Content = request.Content ?? post.Content;
